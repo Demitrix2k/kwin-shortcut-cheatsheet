@@ -7,7 +7,7 @@
         "Icon": "input-keyboard",
         "Authors": [{ "Name": "Demitrix2k" }],
         "License": "MIT",
-        "Version": "1.1.0",
+        "Version": "1.1.1",
         "Website": "https://github.com/Demitrix2k/kwin-shortcut-cheatsheet",
         "EnabledByDefault": false
     },

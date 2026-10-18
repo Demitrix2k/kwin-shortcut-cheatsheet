@@ -40,15 +40,17 @@ Tested on Plasma 6.8, Wayland. It needs Plasma 6.0 or newer.
 From a release file (or one you built, see [Build](#build)):
 
 ```sh
-kpackagetool6 --type=KWin/Script -i kwin-shortcut-cheatsheet-1.1.0.kwinscript
+kpackagetool6 --type=KWin/Script -i kwin-shortcut-cheatsheet-1.1.1.kwinscript
 ```
 
 Then enable **KWin Shortcut Cheat Sheet** under System Settings › Window Management › KWin
 Scripts. To update, use `-u` instead of `-i`. To remove it, run
 `kpackagetool6 --type=KWin/Script -r kwin-shortcut-cheatsheet`.
 
-After an update, turn the script off and on again (or log out and back in).
-KWin keeps the old version loaded until then.
+After an update, turn the script off and on again. KWin keeps the old version
+loaded until then. (Updating from 1.1.0 or earlier needs one logout instead: those
+versions kept their JS files at fixed paths, which KWin keeps cached. From 1.1.1 on,
+each release's JS lives in a folder named after the version, so a toggle is enough.)
 
 ## Changing the key
 
