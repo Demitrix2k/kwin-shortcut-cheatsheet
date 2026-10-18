@@ -13,6 +13,10 @@
       <label>Hide shortcuts whose label, action id or "Component: label" matches this regex</label>
       <default></default>
     </entry>
+    <entry name="HiddenSections" type="String">
+      <label>Sections to leave out, one title per line (ignoring case), e.g. "Hardware keys"</label>
+      <default></default>
+    </entry>
     <entry name="SplitScripts" type="Bool">
       <label>Give KWin scripts' shortcuts ("Script: action") their own sections</label>
       <default>true</default>

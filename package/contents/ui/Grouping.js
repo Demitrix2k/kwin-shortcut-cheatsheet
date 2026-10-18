@@ -66,6 +66,14 @@ function parseRules(text, errors) {
     return rules;
 }
 
+// One entry per line, trimmed and lower-cased; blank lines and "#" comments
+// are skipped.
+function parseList(text) {
+    return String(text || "").split("\n")
+        .map(function (line) { return line.trim().toLowerCase(); })
+        .filter(function (line) { return line && line[0] !== "#"; });
+}
+
 function parsePattern(text) {
     text = String(text || "").trim();
     if (!text) return null;
@@ -97,7 +105,8 @@ function rowsOf(path, infos, names) {
 }
 
 // rows: all components' rows. options: { custom: rules, hide: RegExp|null,
-// splitScripts: bool, groupHardware: bool }. Returns
+// splitScripts: bool, groupHardware: bool, hiddenSections: [lower-cased
+// titles] }. Returns
 // [{ title, rows: [{ label, keys, search }] }].
 function sections(rows, options) {
     options = options || {};
@@ -105,6 +114,7 @@ function sections(rows, options) {
     var hide = options.hide || null;
     var splitScripts = options.splitScripts !== false;
     var groupHardware = options.groupHardware !== false;
+    var hiddenSections = options.hiddenSections || [];
 
     var visible = rows.filter(function (row) {
         return !hide || !(hide.test(row.label) || hide.test(row.action) || hide.test(row.component + ": " + row.label));
@@ -177,7 +187,7 @@ function sections(rows, options) {
         .map(function (title) {
             return { title: title, rows: collapseRuns(byTitle[title]).sort(function (a, b) { return cmp(a.label, b.label); }) };
         })
-        .filter(function (s) { return s.rows.length; });
+        .filter(function (s) { return s.rows.length && hiddenSections.indexOf(s.title.toLowerCase()) < 0; });
 }
 
 // Numbered rows like "Switch to Desktop 1/2/3" on Ctrl+F1/F2/F3, three or

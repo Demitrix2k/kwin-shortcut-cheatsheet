@@ -45,22 +45,37 @@ Screenshots: Spectacle|screenshot</string>
        <property name="clearButtonEnabled"><bool>true</bool></property>
       </widget>
      </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="hiddenSectionsLabel">
+       <property name="text"><string>Hidden sections:</string></property>
+       <property name="alignment"><set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set></property>
+       <property name="buddy"><cstring>kcfg_HiddenSections</cstring></property>
+      </widget>
+     </item>
      <item row="1" column="1">
+      <widget class="QPlainTextEdit" name="kcfg_HiddenSections">
+       <property name="maximumSize"><size><width>16777215</width><height>80</height></size></property>
+       <property name="placeholderText"><string>One section title per line, as shown in the cheat sheet, e.g.
+Hardware keys</string></property>
+       <property name="tabChangesFocus"><bool>true</bool></property>
+      </widget>
+     </item>
+     <item row="2" column="1">
       <widget class="QCheckBox" name="kcfg_SplitScripts">
        <property name="text"><string>Give each KWin script's shortcuts their own section</string></property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="3" column="1">
       <widget class="QCheckBox" name="kcfg_GroupHardwareKeys">
        <property name="text"><string>Put media, volume, brightness and power keys in one section at the end</string></property>
       </widget>
      </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <widget class="QCheckBox" name="kcfg_UseCustomAccent">
        <property name="text"><string>Custom accent colour:</string></property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="4" column="1">
       <widget class="KColorButton" name="kcfg_AccentColor">
        <property name="enabled"><bool>false</bool></property>
       </widget>

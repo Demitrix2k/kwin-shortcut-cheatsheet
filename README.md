@@ -40,7 +40,7 @@ Tested on Plasma 6.8, Wayland. It needs Plasma 6.0 or newer.
 From a release file (or one you built, see [Build](#build)):
 
 ```sh
-kpackagetool6 --type=KWin/Script -i kwin-shortcut-cheatsheet-1.0.0.kwinscript
+kpackagetool6 --type=KWin/Script -i kwin-shortcut-cheatsheet-1.1.0.kwinscript
 ```
 
 Then enable **KWin Shortcut Cheat Sheet** under System Settings › Window Management › KWin
@@ -77,6 +77,7 @@ System Settings › Window Management › KWin Scripts › KWin Shortcut Cheat S
 | --- | --- |
 | Custom sections | One `Title: regex` per line. A shortcut whose label or action id matches the regex (case-insensitive) goes in that section. Custom sections come first, in the order you write them. Lines starting with `#` are ignored. Lines that don't parse are listed at the top of the cheat sheet. |
 | Hide shortcuts matching | One regex. Hides any shortcut whose label, action id or `Component: label` matches, for example `^Plasma: \|Volume`. |
+| Hidden sections | One section title per line, as the cheat sheet shows it, for example `Hardware keys` or `Krohnkite`. Matching ignores case. Those sections and their shortcuts are left out entirely, also from filtering. A title that doesn't exist does nothing. Lines starting with `#` are ignored. |
 | Give each KWin script's shortcuts their own section | On by default. Turn it off to sort script shortcuts into KWin's groups instead. |
 | Put media, volume, brightness and power keys in one section at the end | On by default. A shortcut moves there only if all its keys are such dedicated keys. Turn it off to keep them with their apps. |
 | Custom accent colour | Replaces the colour scheme's highlight colour for section titles, the border and key chips. |

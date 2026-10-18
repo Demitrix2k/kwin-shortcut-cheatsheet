@@ -8,7 +8,7 @@ const load = (file, names) => {
     return new Function(`${src}\nreturn { ${names} };`)();
 };
 const { names } = load("KeyNames.js", "names");
-const G = load("Grouping.js", "keyText, parseRules, parsePattern, rowsOf, sections, filter");
+const G = load("Grouping.js", "keyText, parseRules, parsePattern, rowsOf, sections, filter, parseList");
 
 // Key codes.
 const META = 0x10000000, CTRL = 0x04000000, ALT = 0x08000000, SHIFT = 0x02000000;
@@ -103,5 +103,16 @@ assert.equal(s[s.length - 1].title, "Hardware keys");
 assert.deepEqual(s[s.length - 1].rows.map(r => r.label), ["Increase Volume", "Mute"]);
 assert.deepEqual(s.find(x => x.title === "Audio Volume").rows.map(r => r.label), ["Mute Microphone"]);
 assert.ok(!titles(G.sections(kwin.concat(hw), { groupHardware: false })).includes("Hardware keys"));
+
+// Hidden sections: dropped after grouping, case-insensitive; unknown titles
+// and comments are harmless.
+assert.deepEqual(G.parseList("Hardware keys\n  # comment\n\n  TILER  "), ["hardware keys", "tiler"]);
+s = G.sections(kwin.concat(hw), { hiddenSections: G.parseList("hardware KEYS\nTiler\nNo Such Section") });
+assert.ok(!titles(s).includes("Hardware keys"));
+assert.ok(!titles(s).includes("Tiler"));
+assert.ok(!s.flatMap(x => x.rows).some(r => r.label === "Increase Volume" || r.label === "Focus Left"));
+assert.deepEqual(titles(s), titles(G.sections(kwin.concat(hw), {})).filter(t => t !== "Hardware keys" && t !== "Tiler"));
+assert.equal(G.filter(s, "increase").flatMap(x => x.rows).length, 0);
+assert.deepEqual(titles(G.sections(kwin, { hiddenSections: ["no such section"] })), titles(G.sections(kwin, {})));
 
 console.log("ok");

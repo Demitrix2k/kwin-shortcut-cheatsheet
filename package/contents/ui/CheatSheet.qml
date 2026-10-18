@@ -158,6 +158,7 @@ Item {
             hide: Grouping.parsePattern(setting("HidePattern", "")),
             splitScripts: String(setting("SplitScripts", true)) !== "false",
             groupHardware: String(setting("GroupHardwareKeys", true)) !== "false",
+            hiddenSections: Grouping.parseList(setting("HiddenSections", "")),
         });
         const own = rows.find(r => r.componentId === "kwin" && r.action === actionName);
         sheet.customAccent = String(setting("UseCustomAccent", false)) === "true"
