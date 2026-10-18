@@ -24,7 +24,56 @@ RENAME = {
     "Down": "↓",
     "PageUp": "PgUp",
     "PageDown": "PgDown",
+    # Media, volume, brightness and power keys: what's printed on the key, not Qt's enum.
+    "VolumeUp": "Volume Up",
+    "VolumeDown": "Volume Down",
+    "VolumeMute": "Mute",
+    "MicMute": "Mic Mute",
+    "MicVolumeUp": "Mic Volume Up",
+    "MicVolumeDown": "Mic Volume Down",
+    "MediaPlay": "Play",
+    "MediaPause": "Pause",
+    "MediaTogglePlayPause": "Play/Pause",
+    "MediaStop": "Stop",
+    "MediaNext": "Next Track",
+    "MediaPrevious": "Previous Track",
+    "MediaRecord": "Record",
+    "AudioForward": "Fast Forward",
+    "AudioRewind": "Rewind",
+    "MonBrightnessUp": "Brightness Up",
+    "MonBrightnessDown": "Brightness Down",
+    "KeyboardBrightnessUp": "Keyboard Light Up",
+    "KeyboardBrightnessDown": "Keyboard Light Down",
+    "KeyboardLightOnOff": "Keyboard Light",
+    "TouchpadToggle": "Touchpad",
+    "TouchpadOn": "Touchpad On",
+    "TouchpadOff": "Touchpad Off",
+    "PowerOff": "Power",
+    "PowerDown": "Power Down",
+    "ScreenSaver": "Lock Screen",
+    "WLAN": "Wi-Fi",
+    "WebCam": "Webcam",
+    "Zenkaku_Hankaku": "Zenkaku/Hankaku",
+    "HomePage": "Home Page",
+    # Names that read worse split into words.
+    "Super_L": "Super",
+    "Super_R": "Super",
+    "Hyper_L": "Hyper",
+    "Hyper_R": "Hyper",
+    "AltGr": "AltGr",
+    "SysReq": "SysReq",
+    "iTouch": "iTouch",
 }
+
+
+def friendly(name):
+    """Qt's enum name as words: "LaunchMail" -> "Launch Mail", "Launch0" -> "Launch 0"."""
+    if name in RENAME:
+        return RENAME[name]
+    name = name.replace("_", " ")
+    name = re.sub(r"(?<=[a-z])(?=[A-Z0-9])|(?<=[0-9])(?=[A-Za-z])|(?<=[A-Z])(?=[A-Z][a-z])", " ", name)
+    return name
+
 
 names = {}
 with open(HEADER, encoding="utf-8") as f:
@@ -32,7 +81,7 @@ with open(HEADER, encoding="utf-8") as f:
         name, code = m.group(1), int(m.group(2), 16)
         if code < 0x01000000:
             continue                    # printable: the code is the character
-        names.setdefault(code, RENAME.get(name, name))   # first name wins over aliases
+        names.setdefault(code, friendly(name))   # first name wins over aliases
 
 out = [
     ".pragma library",

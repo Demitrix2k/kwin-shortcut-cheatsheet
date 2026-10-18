@@ -40,7 +40,7 @@ Tested on Plasma 6.8, Wayland. It needs Plasma 6.0 or newer.
 From a release file (or one you built, see [Build](#build)):
 
 ```sh
-kpackagetool6 --type=KWin/Script -i kwin-shortcut-cheatsheet-1.1.1.kwinscript
+kpackagetool6 --type=KWin/Script -i kwin-shortcut-cheatsheet-1.1.5.kwinscript
 ```
 
 Then enable **KWin Shortcut Cheat Sheet** under System Settings › Window Management › KWin

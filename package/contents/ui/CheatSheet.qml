@@ -21,14 +21,24 @@ Item {
         property string text
         property color accent
         width: chipText.implicitWidth + Kirigami.Units.gridUnit / 2
-        height: chipText.implicitHeight + 2
+        // From the font, not the text: a chip with a (larger) arrow stays as tall as the rest.
+        height: Math.ceil(chipMetrics.height) + 2
+        FontMetrics { id: chipMetrics; font: chipText.font }
         radius: 3
         color: Qt.alpha(accent, 0.14)
         border.color: Qt.alpha(accent, 0.35)
         Text {
             id: chipText
             anchors.centerIn: parent
-            text: parent.text
+            // Monospace fonts (Noto Sans Mono, for one) draw arrows much smaller than
+            // their letters, ← and → barely visible, so arrows come from the regular
+            // sans-serif font, a size up.
+            readonly property bool hasArrow: /[←↑→↓]/.test(parent.text)
+            textFormat: hasArrow ? Text.RichText : Text.PlainText
+            text: hasArrow
+                ? parent.text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                      .replace(/[←↑→↓]/g, a => '<span style="font-family:sans-serif; font-size:' + Math.round(font.pixelSize * 1.2) + 'px">' + a + '</span>')
+                : parent.text
             color: Kirigami.Theme.textColor
             font.family: "monospace"
             font.pixelSize: Kirigami.Units.gridUnit * 0.68
@@ -391,33 +401,58 @@ Item {
                                     Repeater {
                                         model: modelData.rows
                                         Item {
+                                            id: row
                                             required property var modelData
+                                            readonly property real gap: sheet.unit / 2
+                                            // The keys go beside the label when they fit next to at
+                                            // least 45% of it. Otherwise they go below it, right-aligned,
+                                            // wrapping onto more lines if needed, so no key is cut off.
+                                            readonly property bool stacked: chips.implicitWidth > width * 0.55
+                                                && label.implicitWidth + gap + chips.implicitWidth > width
                                             width: sheet.columnWidth
-                                            height: Math.max(label.implicitHeight, chips.height)
+                                            height: stacked ? label.implicitHeight + 2 + (wrapped.item ? wrapped.item.height : 0)
+                                                            : Math.max(label.implicitHeight, chips.height)
                                             Text {
                                                 id: label
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                // The label keeps at least 45% of the row; keys that don't
-                                                // fit in the rest are cut off on the left.
-                                                width: Math.max(parent.width * 0.45, parent.width - chips.width - sheet.unit / 2)
+                                                y: row.stacked ? 0 : (row.height - implicitHeight) / 2
+                                                width: row.stacked ? row.width : row.width - chips.implicitWidth - row.gap
                                                 text: modelData.label
                                                 color: Kirigami.Theme.textColor
                                                 elide: Text.ElideRight
                                                 font.pixelSize: sheet.unit * 0.72
                                             }
-                                            Item {
+                                            // Beside the label: one line (its width also decides `stacked`).
+                                            Row {
+                                                id: chips
+                                                visible: !row.stacked
                                                 anchors.right: parent.right
-                                                anchors.verticalCenter: parent.verticalCenter
-                                                width: parent.width - label.width - sheet.unit / 2
-                                                height: chips.height
-                                                clip: true
-                                                Row {
-                                                    id: chips
-                                                    anchors.right: parent.right
+                                                y: (row.height - height) / 2
+                                                layoutDirection: Qt.RightToLeft
+                                                spacing: sheet.unit / 4
+                                                Repeater {
+                                                    model: modelData.keys
+                                                    KeyChip {
+                                                        required property string modelData
+                                                        text: modelData
+                                                        accent: sheet.accent
+                                                    }
+                                                }
+                                            }
+                                            // Below the label: wraps. Only made for rows that need it.
+                                            Loader {
+                                                id: wrapped
+                                                active: row.stacked
+                                                y: label.implicitHeight + 2
+                                                // Width only: the Flow's own height decides the Loader's.
+                                                // (A Loader with a set height squeezes its item to it.)
+                                                width: row.width
+                                                sourceComponent: Flow {
+                                                    width: row.width
                                                     layoutDirection: Qt.RightToLeft
                                                     spacing: sheet.unit / 4
+                                                    clip: true   // only a single key wider than the column
                                                     Repeater {
-                                                        model: modelData.keys
+                                                        model: row.modelData.keys
                                                         KeyChip {
                                                             required property string modelData
                                                             text: modelData
