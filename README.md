@@ -97,6 +97,13 @@ action ids in `~/.config/kglobalshortcutsrc`.
 
 ## Gotchas
 
+- **Colours follow the theme from when you logged in.** By default the cheat
+  sheet uses your colour scheme's colours and accent (the highlight colour), like
+  other apps. But KWin, where scripts run, keeps the colour scheme it started
+  with: after switching schemes or accent, the cheat sheet shows the old colours
+  until you log out and back in. It can't look up the new ones itself, since the
+  desktop portal refuses requests from KWin. Set a custom accent colour if you
+  want one that never changes.
 - **Typing works through global shortcuts.** KWin never gives keyboard focus
   to a script's own windows, so key presses can't reach the cheat sheet. Instead,
   the keys it needs are global shortcuts while it's open (see above). Only
