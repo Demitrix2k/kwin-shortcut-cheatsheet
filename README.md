@@ -21,7 +21,14 @@ and again to close, or click anywhere, or press the shortcut again.
   *Window switching*, *Screens*, *Virtual desktops*, *Windows* and *Other
   KWin*. Each KWin script whose shortcuts are labelled `Script name: …` gets
   its own section. Every other component (Plasma, Spectacle, KRunner, media
-  keys and so on) gets a section under its own name.
+  keys and so on) gets a section under its own name. Shortcuts on dedicated
+  media, volume, brightness and power keys go in one *Hardware keys* section
+  at the end.
+- **Compact.** Numbered runs become one row: *Switch to Desktop 1–3* on
+  `Ctrl+F1 … 3`, *Activate Task Manager Entry 1–9* on `Meta+1 … 9`.
+- **Scroll hints.** When the list doesn't fit, it fades out at the bottom and
+  a thin bar at the right shows where you are. A footer lists the keys that
+  work while the guide is open.
 - **Your colours.** It uses your colour scheme. You can set an accent colour.
 - **Your sections.** You can add custom sections and hide shortcuts with
   regular expressions (see [Settings](#settings)).
@@ -71,6 +78,7 @@ System Settings › Window Management › KWin Scripts › Keys Guide › config
 | Custom sections | One `Title: regex` per line. A shortcut whose label or action id matches the regex (case-insensitive) goes in that section. Custom sections come first, in the order you write them. Lines starting with `#` are ignored. Lines that don't parse are listed at the top of the guide. |
 | Hide shortcuts matching | One regex. Hides any shortcut whose label, action id or `Component: label` matches, for example `^Plasma: \|Volume`. |
 | Give each KWin script's shortcuts their own section | On by default. Turn it off to sort script shortcuts into KWin's groups instead. |
+| Put media, volume, brightness and power keys in one section at the end | On by default. A shortcut moves there only if all its keys are such dedicated keys. Turn it off to keep them with their apps. |
 | Custom accent colour | Replaces the colour scheme's highlight colour for section titles, the border and key chips. |
 
 Example custom sections:

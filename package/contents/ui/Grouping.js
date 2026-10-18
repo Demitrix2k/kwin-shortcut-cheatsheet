@@ -22,6 +22,15 @@ var KWIN_GROUPS = [
     { title: "Windows", match: /Window/ },
 ];
 var OTHER_KWIN = "Other KWin";
+var HARDWARE = "Hardware keys";
+
+// Media, volume, brightness, power, launch and similar dedicated keys
+// (Qt::Key_Back .. Key_Keyboard, Key_MediaLast, Key_Cancel .. Key_CameraFocus).
+function isHardwareKey(code) {
+    var key = (Number(code) || 0) & 0x01ffffff;
+    return (key >= 0x01000061 && key <= 0x0100011f) || key === 0x0100ffff
+        || (key >= 0x01020001 && key <= 0x0110ffff);
+}
 
 // Qt key code -> "Meta+Shift+←". names: KeyNames.names.
 function keyText(code, names) {
@@ -73,6 +82,7 @@ function rowsOf(path, infos, names) {
         var keys = [];
         (r[6] || []).forEach(function (k) { var t = keyText(k, names); if (t) keys.push(t); });
         if (!keys.length) return;
+        var codes = (r[6] || []).filter(function (k) { return Number(k); });
         out.push({
             path: String(path),
             action: String(r[0]),
@@ -80,18 +90,21 @@ function rowsOf(path, infos, names) {
             componentId: String(r[2]),
             component: String(r[3]) || String(r[2]),
             keys: keys,
+            hardware: codes.every(isHardwareKey),
         });
     });
     return out;
 }
 
 // rows: all components' rows. options: { custom: rules, hide: RegExp|null,
-// splitScripts: bool }. Returns [{ title, rows: [{ label, keys, action }] }].
+// splitScripts: bool, groupHardware: bool }. Returns
+// [{ title, rows: [{ label, keys, search }] }].
 function sections(rows, options) {
     options = options || {};
     var custom = options.custom || [];
     var hide = options.hide || null;
     var splitScripts = options.splitScripts !== false;
+    var groupHardware = options.groupHardware !== false;
 
     var visible = rows.filter(function (row) {
         return !hide || !(hide.test(row.label) || hide.test(row.action) || hide.test(row.component + ": " + row.label));
@@ -117,14 +130,14 @@ function sections(rows, options) {
     var byTitle = {};
     var add = function (title, row, label) {
         if (!byTitle[title]) { byTitle[title] = []; order.push(title); }
-        byTitle[title].push({ label: label || row.label, keys: row.keys, action: row.action, component: row.component });
+        byTitle[title].push({ label: label || row.label, keys: row.keys, search: row.keys.join(" ") });
     };
     // Fixed order: custom sections, KWin's built-in groups, scripts, other
     // KWin, then other components by name. Reserve the leading slots now.
     custom.forEach(function (rule) { if (!byTitle[rule.title]) { byTitle[rule.title] = []; order.push(rule.title); } });
     KWIN_GROUPS.forEach(function (g) { if (!byTitle[g.title]) { byTitle[g.title] = []; order.push(g.title); } });
 
-    var scripts = {}, others = {}, otherKwin = [];
+    var scripts = {}, others = {}, otherKwin = [], hardware = [];
     visible.forEach(function (row) {
         for (var i = 0; i < custom.length; i++) {
             if (custom[i].match.test(row.label) || custom[i].match.test(row.action)) {
@@ -132,6 +145,10 @@ function sections(rows, options) {
                 add(custom[i].title, row, p0 && prefixCount[p0[0]] > 1 ? p0[1] : row.label);
                 return;
             }
+        }
+        if (groupHardware && row.hardware) {
+            hardware.push(row);
+            return;
         }
         if (row.componentId === "kwin") {
             var p = prefixOf(row);
@@ -154,12 +171,52 @@ function sections(rows, options) {
     Object.keys(others).sort(cmp).forEach(function (name) {
         others[name].forEach(function (row) { add(name, row); });
     });
+    hardware.forEach(function (row) { add(HARDWARE, row); });
 
     return order
         .map(function (title) {
-            return { title: title, rows: byTitle[title].sort(function (a, b) { return cmp(a.label, b.label); }) };
+            return { title: title, rows: collapseRuns(byTitle[title]).sort(function (a, b) { return cmp(a.label, b.label); }) };
         })
         .filter(function (s) { return s.rows.length; });
+}
+
+// Numbered rows like "Switch to Desktop 1/2/3" on Ctrl+F1/F2/F3, three or
+// more in a row with one key each, become one row: "Switch to Desktop 1–3"
+// on "Ctrl+F1 … 3". The row keeps every key in .search for the filter.
+function collapseRuns(rows) {
+    var groups = {};
+    rows.forEach(function (row, i) {
+        var lm = /^(.*?)(\d+)$/.exec(row.label);
+        var km = row.keys.length === 1 ? /^(.*?)(\d+)$/.exec(row.keys[0]) : null;
+        if (!lm || !km) return;
+        var ln = Number(lm[2]), kn = Number(km[2]);
+        var id = lm[1] + "\u0000" + km[1] + "\u0000" + (kn - ln);
+        (groups[id] = groups[id] || []).push({ i: i, ln: ln, kn: kn, lp: lm[1], kp: km[1] });
+    });
+    var drop = {}, merged = {};
+    Object.keys(groups).forEach(function (id) {
+        var g = groups[id].sort(function (a, b) { return a.ln - b.ln; });
+        for (var start = 0; start < g.length;) {
+            var end = start;
+            while (end + 1 < g.length && g[end + 1].ln === g[end].ln + 1) end++;
+            if (end - start >= 2) {
+                var first = g[start], last = g[end], search = [];
+                for (var k = start; k <= end; k++) { drop[g[k].i] = true; search.push(rows[g[k].i].keys[0]); }
+                merged[first.i] = {
+                    label: first.lp + first.ln + "\u2013" + last.ln,
+                    keys: [first.kp + first.kn + " \u2026 " + last.kn],
+                    search: search.join(" "),
+                };
+            }
+            start = end + 1;
+        }
+    });
+    var out = [];
+    rows.forEach(function (row, i) {
+        if (merged[i]) out.push(merged[i]);
+        else if (!drop[i]) out.push(row);
+    });
+    return out;
 }
 
 // Sections with only the rows whose section title, label or keys contain
@@ -170,7 +227,7 @@ function filter(list, query) {
     var out = [];
     list.forEach(function (s) {
         var rows = s.rows.filter(function (row) {
-            var hay = (s.title + " " + row.label + " " + row.keys.join(" ")).toLowerCase();
+            var hay = (s.title + " " + row.label + " " + (row.search || row.keys.join(" "))).toLowerCase();
             return words.every(function (w) { return hay.indexOf(w) >= 0; });
         });
         if (rows.length) out.push({ title: s.title, rows: rows });

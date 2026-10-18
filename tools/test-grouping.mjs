@@ -77,4 +77,31 @@ assert.deepEqual(G.filter(G.sections(all, {}), "tiler right").flatMap(x => x.row
 assert.equal(G.filter(G.sections(all, {}), " ").length, G.sections(all, {}).length);
 assert.equal(G.filter(G.sections(all, {}), "zzz").length, 0);
 
+// Numbered runs collapse; short runs and gaps don't.
+const desk = n => info("Switch to Desktop " + n, "Switch to Desktop " + n, [CTRL | (0x01000030 + n - 1)]);
+const runs = G.rowsOf("/component/kwin", [desk(1), desk(2), desk(3), desk(5), desk(6),
+    info("Window to Desktop 1", "Window to Desktop 1", [META | 0x31]),
+    info("Window to Desktop 2", "Window to Desktop 2", [META | 0x32])], names);
+const vd = G.sections(runs, {}).find(x => x.title === "Virtual desktops");
+assert.deepEqual(vd.rows.map(r => [r.label, r.keys.join(" ")]), [
+    ["Switch to Desktop 1\u20133", "Ctrl+F1 \u2026 3"],
+    ["Switch to Desktop 5", "Ctrl+F5"],
+    ["Switch to Desktop 6", "Ctrl+F6"],
+    ["Window to Desktop 1", "Meta+1"],
+    ["Window to Desktop 2", "Meta+2"],
+]);
+assert.equal(G.filter([vd], "ctrl+f2").flatMap(x => x.rows).length, 1);
+
+// Hardware keys go last, unless a key with a normal key is bound too.
+const hw = G.rowsOf("/component/kmix", [
+    info("increase_volume", "Increase Volume", [0x01000072], "kmix", "Audio Volume"),
+    info("mute", "Mute", [SHIFT | 0x01000071], "kmix", "Audio Volume"),
+    info("mic_mute", "Mute Microphone", [0x01000113, META | 0x2e], "kmix", "Audio Volume"),
+], names);
+s = G.sections(kwin.concat(hw), {});
+assert.equal(s[s.length - 1].title, "Hardware keys");
+assert.deepEqual(s[s.length - 1].rows.map(r => r.label), ["Increase Volume", "Mute"]);
+assert.deepEqual(s.find(x => x.title === "Audio Volume").rows.map(r => r.label), ["Mute Microphone"]);
+assert.ok(!titles(G.sections(kwin.concat(hw), { groupHardware: false })).includes("Hardware keys"));
+
 console.log("ok");

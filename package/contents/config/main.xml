@@ -17,6 +17,10 @@
       <label>Give KWin scripts' shortcuts ("Script: action") their own sections</label>
       <default>true</default>
     </entry>
+    <entry name="GroupHardwareKeys" type="Bool">
+      <label>Put shortcuts on media, volume, brightness and power keys in one "Hardware keys" section at the end</label>
+      <default>true</default>
+    </entry>
     <entry name="UseCustomAccent" type="Bool">
       <label>Use a custom accent colour instead of the colour scheme's highlight</label>
       <default>false</default>

@@ -15,6 +15,26 @@ Item {
 
     readonly property string actionName: "KeysGuideShow"
 
+    // A key combination drawn as a small keycap.
+    // (Inline components can't see this file's ids, so the accent is passed in.)
+    component KeyChip: Rectangle {
+        property string text
+        property color accent
+        width: chipText.implicitWidth + Kirigami.Units.gridUnit / 2
+        height: chipText.implicitHeight + 2
+        radius: 3
+        color: Qt.alpha(accent, 0.14)
+        border.color: Qt.alpha(accent, 0.35)
+        Text {
+            id: chipText
+            anchors.centerIn: parent
+            text: parent.text
+            color: Kirigami.Theme.textColor
+            font.family: "monospace"
+            font.pixelSize: Kirigami.Units.gridUnit * 0.68
+        }
+    }
+
     ShortcutHandler {
         name: root.actionName
         text: "Keys Guide: Show or hide the shortcut overview"
@@ -137,6 +157,7 @@ Item {
             custom: Grouping.parseRules(setting("CustomGroups", ""), errors),
             hide: Grouping.parsePattern(setting("HidePattern", "")),
             splitScripts: String(setting("SplitScripts", true)) !== "false",
+            groupHardware: String(setting("GroupHardwareKeys", true)) !== "false",
         });
         const own = rows.find(r => r.componentId === "kwin" && r.action === actionName);
         guide.customAccent = String(setting("UseCustomAccent", false)) === "true"
@@ -216,7 +237,7 @@ Item {
 
         // The panel keeps the height it opened with while a filter narrows
         // the list, so it doesn't jump around under the pointer.
-        readonly property real naturalHeight: Math.min(Math.round(height * 0.88), header.height + Math.max(content.implicitHeight, unit * 3) + unit * 3)
+        readonly property real naturalHeight: Math.min(Math.round(height * 0.88), header.height + Math.max(content.implicitHeight, unit * 3) + footer.height + unit * 4)
         property real keptHeight: 0
         onNaturalHeightChanged: if (!query) keptHeight = naturalHeight
 
@@ -243,49 +264,48 @@ Item {
                 x: guide.unit; y: guide.unit
                 width: parent.width - guide.unit * 2
                 spacing: guide.unit / 4
-                Text {
-                    text: "Keyboard shortcuts"
-                    color: Kirigami.Theme.textColor
-                    font.pixelSize: guide.unit * 1.3
-                    font.bold: true
-                }
-                Row {
-                    spacing: 0
+                Item {
+                    width: parent.width
+                    height: title.implicitHeight
                     Text {
-                        text: guide.query ? "Filter: " : "Type to filter"
-                        color: guide.query ? guide.accent : Kirigami.Theme.disabledTextColor
-                        font.pixelSize: guide.unit * 0.85
-                        font.family: guide.query ? "monospace" : Kirigami.Theme.defaultFont.family
+                        id: title
+                        text: "Keyboard shortcuts"
+                        color: Kirigami.Theme.textColor
+                        font.pixelSize: guide.unit * 1.3
+                        font.bold: true
                     }
-                    Text {
-                        visible: guide.query !== ""
-                        text: guide.query
-                        // Selected (Ctrl+A): drawn like a text selection.
-                        color: guide.allSelected ? Kirigami.Theme.highlightedTextColor : guide.accent
-                        font.pixelSize: guide.unit * 0.85
-                        font.family: "monospace"
-                        Rectangle {
-                            z: -1
-                            anchors.fill: parent
-                            visible: guide.allSelected
-                            color: Kirigami.Theme.highlightColor
+                    // What's typed, at the right of the title.
+                    Row {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: title.verticalCenter
+                        Text {
+                            text: guide.query ? "Filter: " : "Type to filter"
+                            color: guide.query ? guide.accent : Kirigami.Theme.disabledTextColor
+                            font.pixelSize: guide.unit * 0.85
+                            font.family: guide.query ? "monospace" : Kirigami.Theme.defaultFont.family
+                        }
+                        Text {
+                            visible: guide.query !== ""
+                            text: guide.query
+                            // Selected (Ctrl+A): drawn like a text selection.
+                            color: guide.allSelected ? Kirigami.Theme.highlightedTextColor : guide.accent
+                            font.pixelSize: guide.unit * 0.85
+                            font.family: "monospace"
+                            Rectangle {
+                                z: -1
+                                anchors.fill: parent
+                                visible: guide.allSelected
+                                color: Kirigami.Theme.highlightColor
+                            }
+                        }
+                        Text {
+                            visible: guide.query !== ""
+                            text: "\u258f  " + guide.shownCount + (guide.shownCount === 1 ? " match" : " matches")
+                            color: guide.accent
+                            font.pixelSize: guide.unit * 0.85
+                            font.family: "monospace"
                         }
                     }
-                    Text {
-                        visible: guide.query !== ""
-                        text: "\u258f   " + guide.shownCount + (guide.shownCount === 1 ? " match" : " matches")
-                        color: guide.accent
-                        font.pixelSize: guide.unit * 0.85
-                        font.family: "monospace"
-                    }
-                }
-                Text {
-                    width: parent.width
-                    wrapMode: Text.WordWrap
-                    text: "Live from KDE. Backspace deletes · Ctrl+Backspace deletes a word · Ctrl+A selects the filter · Esc clears the filter, then closes · a click anywhere"
-                          + (guide.ownKeys ? " or " + guide.ownKeys : "") + " closes · mouse wheel scrolls"
-                    color: Kirigami.Theme.disabledTextColor
-                    font.pixelSize: guide.unit * 0.7
                 }
                 Text {
                     visible: guide.errors.length > 0
@@ -295,6 +315,39 @@ Item {
                     color: Kirigami.Theme.negativeTextColor
                     font.pixelSize: guide.unit * 0.75
                 }
+            }
+
+            // Keys that work while the guide is open.
+            Flow {
+                id: footer
+                anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: guide.unit }
+                spacing: guide.unit
+                Repeater {
+                    model: [
+                        { keys: ["Esc"], text: guide.query ? "clear filter" : "close" },
+                    ].concat(guide.ownKeys ? [{ keys: [guide.ownKeys], text: "close" }] : [])
+                     .concat([{ keys: [], text: "click anywhere to close · mouse wheel scrolls" }])
+                    Row {
+                        required property var modelData
+                        spacing: guide.unit / 4
+                        Repeater {
+                            model: modelData.keys
+                            KeyChip { required property string modelData; text: modelData; accent: guide.accent }
+                        }
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: modelData.text
+                            color: Kirigami.Theme.disabledTextColor
+                            font.pixelSize: guide.unit * 0.7
+                        }
+                    }
+                }
+            }
+            Rectangle {
+                // A hairline between the list and the footer.
+                anchors { left: parent.left; right: parent.right; bottom: footer.top; margins: guide.unit; bottomMargin: guide.unit / 2 }
+                height: 1
+                color: Qt.alpha(Kirigami.Theme.textColor, 0.12)
             }
 
             Text {
@@ -307,7 +360,7 @@ Item {
 
             Flickable {
                 id: flick
-                anchors { left: parent.left; right: parent.right; top: header.bottom; bottom: parent.bottom; margins: guide.unit; topMargin: guide.unit * 0.75 }
+                anchors { left: parent.left; right: parent.right; top: header.bottom; bottom: footer.top; margins: guide.unit; topMargin: guide.unit * 0.75 }
                 contentHeight: content.implicitHeight
                 clip: true
                 interactive: contentHeight > height
@@ -364,21 +417,10 @@ Item {
                                                     spacing: guide.unit / 4
                                                     Repeater {
                                                         model: modelData.keys
-                                                        Rectangle {
+                                                        KeyChip {
                                                             required property string modelData
-                                                            width: keyText.implicitWidth + guide.unit / 2
-                                                            height: keyText.implicitHeight + 2
-                                                            radius: 3
-                                                            color: Qt.alpha(guide.accent, 0.14)
-                                                            border.color: Qt.alpha(guide.accent, 0.35)
-                                                            Text {
-                                                                id: keyText
-                                                                anchors.centerIn: parent
-                                                                text: modelData
-                                                                color: Kirigami.Theme.textColor
-                                                                font.family: "monospace"
-                                                                font.pixelSize: guide.unit * 0.68
-                                                            }
+                                                            text: modelData
+                                                            accent: guide.accent
                                                         }
                                                     }
                                                 }
@@ -390,6 +432,36 @@ Item {
                         }
                     }
                 }
+            }
+
+            // Scroll hints: the list fades out at an edge with more beyond
+            // it, and a thin bar at the right shows where the view is.
+            Rectangle {
+                anchors { left: flick.left; right: flick.right; bottom: flick.bottom }
+                height: guide.unit * 2.5
+                visible: flick.contentY + flick.height < flick.contentHeight - 2
+                gradient: Gradient {
+                    GradientStop { position: 0; color: "transparent" }
+                    GradientStop { position: 1; color: panel.color }
+                }
+            }
+            Rectangle {
+                anchors { left: flick.left; right: flick.right; top: flick.top }
+                height: guide.unit * 1.5
+                visible: flick.contentY > 2
+                gradient: Gradient {
+                    GradientStop { position: 0; color: panel.color }
+                    GradientStop { position: 1; color: "transparent" }
+                }
+            }
+            Rectangle {
+                visible: flick.interactive
+                x: flick.x + flick.width + (guide.unit - width) / 2
+                y: flick.y + flick.visibleArea.yPosition * flick.height
+                width: 3
+                height: Math.max(guide.unit, flick.visibleArea.heightRatio * flick.height)
+                radius: 1.5
+                color: Qt.alpha(guide.accent, 0.6)
             }
         }
     }
