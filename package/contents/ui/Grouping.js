@@ -69,7 +69,7 @@ function parsePattern(text) {
 function rowsOf(path, infos, names) {
     var out = [];
     (infos || []).forEach(function (r) {
-        if (/^KeysGuide(Escape|Backspace|Type )/.test(String(r[0]))) return;   // the guide's own typing keys
+        if (/^KeysGuide(Escape|Backspace|Delete|SelectAll|Type )/.test(String(r[0]))) return;   // the guide's own typing keys
         var keys = [];
         (r[6] || []).forEach(function (k) { var t = keyText(k, names); if (t) keys.push(t); });
         if (!keys.length) return;

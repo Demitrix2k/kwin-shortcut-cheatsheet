@@ -13,7 +13,10 @@ and again to close, or click anywhere, or press the shortcut again.
 - **Only bound shortcuts.** Actions without a key aren't shown.
 - **Type to filter.** Letters, digits and spaces narrow the list. Every word
   you type has to appear in the shortcut's name, its keys or its section, so
-  `meta shift` shows everything on Meta+Shift. <kbd>Backspace</kbd> deletes.
+  `meta shift` shows everything on Meta+Shift. <kbd>Backspace</kbd> deletes a
+  letter, <kbd>Ctrl</kbd>+<kbd>Backspace</kbd> a word. <kbd>Ctrl</kbd>+<kbd>A</kbd>
+  selects the whole filter, so <kbd>Backspace</kbd>, <kbd>Del</kbd> or the next
+  letter replaces it.
 - **Grouped.** KWin's own actions are split into *Overview & effects*,
   *Window switching*, *Screens*, *Virtual desktops*, *Windows* and *Other
   KWin*. Each KWin script whose shortcuts are labelled `Script name: …` gets
@@ -49,13 +52,15 @@ Shortcuts › KWin and find **Keys Guide: Show or hide the shortcut overview**.
 take a key from apps. On layouts where `/` needs <kbd>Shift</kbd> (German,
 Nordic and others), the default may not trigger. Rebind it there.
 
-While the guide is open, it also holds 39 keys as temporary global shortcuts:
+While the guide is open, it also holds 42 keys as temporary global shortcuts:
 <kbd>a</kbd>–<kbd>z</kbd>, <kbd>0</kbd>–<kbd>9</kbd>, <kbd>Space</kbd>,
-<kbd>Backspace</kbd> and <kbd>Esc</kbd> (see [Gotchas](#gotchas) for why).
+<kbd>Backspace</kbd>, <kbd>Ctrl</kbd>+<kbd>Backspace</kbd>, <kbd>Del</kbd>,
+<kbd>Ctrl</kbd>+<kbd>A</kbd> and <kbd>Esc</kbd> (see [Gotchas](#gotchas) for
+why).
 It removes them all from kglobalaccel when it closes, so the keys go back to
-your apps. If you see **Keys Guide: Type into the filter**, **Delete a filter
-letter** or **Clear the filter, or close** in System Settings while the guide
-is closed, they're leftovers and safe to remove.
+your apps. If you see any **Keys Guide: … (only while it is open)** entries in
+System Settings while the guide is closed, they're leftovers and safe to
+remove.
 
 ## Settings
 
@@ -84,7 +89,8 @@ action ids in `~/.config/kglobalshortcutsrc`.
 - **Typing works through global shortcuts.** KWin never gives keyboard focus
   to a script's own windows, so key presses can't reach the guide. Instead,
   the keys it needs are global shortcuts while it's open (see above). Only
-  plain letters, digits and space can be typed, and arrow keys don't scroll:
+  plain letters, digits and space can be typed. The filter has no cursor, so
+  editing is at the end only. Arrow keys don't scroll:
   use the mouse wheel. While the guide is open, those keys don't reach your
   apps. If another global shortcut already uses one of them as a bare key,
   that letter won't type.

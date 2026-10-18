@@ -47,6 +47,8 @@ const kwin = G.rowsOf("/component/kwin", [
     info("Lonely", "Lonely: only one", [META | 0x4f]),                  // single prefix: not split
     info("KeysGuideType a", "Keys Guide: type into the filter", [0x41]), // own typing keys: hidden
     info("KeysGuideEscape", "Keys Guide: clear the filter, or close", [0x01000000]),
+    info("KeysGuideSelectAll", "Keys Guide: select the whole filter", [CTRL | 0x41]),
+    info("KeysGuideDeleteWord", "Keys Guide: delete a filter word", [CTRL | 0x01000003]),
 ], names);
 const plasma = G.rowsOf("/component/plasmashell", [
     info("show dashboard", "Show Desktop Grid", [CTRL | 0x01000033], "plasmashell", "Plasma"),

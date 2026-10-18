@@ -25,7 +25,9 @@ Item {
     // KWin never gives its own QML windows keyboard focus, so key presses
     // can't reach the guide. Instead, while it is up, the keys it needs are
     // global shortcuts (letters, digits and space type into the filter;
-    // Backspace deletes; Escape clears the filter, then closes), and they
+    // Backspace deletes, Ctrl+Backspace a word; Ctrl+A selects the filter,
+    // so Backspace, Delete or typing replaces all of it; Escape clears the
+    // filter, then closes), and they
     // are all removed from KDE's list again when it closes, so the keys go
     // back to the apps. (A shortcut destroyed and made again without being
     // removed can end up deaf.)
@@ -45,7 +47,25 @@ Item {
                 name: "KeysGuideBackspace"
                 text: "Keys Guide: Delete a filter letter (only while it is open)"
                 sequence: "Backspace"
-                onActivated: guide.query = guide.query.slice(0, -1)
+                onActivated: guide.query = guide.allSelected ? "" : guide.query.slice(0, -1)
+            }
+            ShortcutHandler {
+                name: "KeysGuideDeleteWord"
+                text: "Keys Guide: Delete a filter word (only while it is open)"
+                sequence: "Ctrl+Backspace"
+                onActivated: guide.query = guide.allSelected ? "" : guide.query.replace(/\S+\s*$|\s+$/, "")
+            }
+            ShortcutHandler {
+                name: "KeysGuideDelete"
+                text: "Keys Guide: Delete the selected filter (only while it is open)"
+                sequence: "Del"
+                onActivated: if (guide.allSelected) guide.query = ""
+            }
+            ShortcutHandler {
+                name: "KeysGuideSelectAll"
+                text: "Keys Guide: Select the whole filter (only while it is open)"
+                sequence: "Ctrl+A"
+                onActivated: guide.allSelected = guide.query !== ""
             }
             Instantiator {
                 model: root.typedKeys
@@ -54,7 +74,7 @@ Item {
                     name: root.typeName(modelData)
                     text: "Keys Guide: Type into the filter (only while it is open)"
                     sequence: modelData === " " ? "Space" : modelData.toUpperCase()
-                    onActivated: guide.query += modelData
+                    onActivated: guide.query = guide.allSelected ? modelData : guide.query + modelData
                 }
             }
         }
@@ -62,7 +82,7 @@ Item {
     function releaseKeys() {
         if (!typing.active) return;
         typing.active = false;
-        const names = ["KeysGuideEscape", "KeysGuideBackspace"].concat(typedKeys.map(typeName));
+        const names = ["KeysGuideEscape", "KeysGuideBackspace", "KeysGuideDeleteWord", "KeysGuideDelete", "KeysGuideSelectAll"].concat(typedKeys.map(typeName));
         for (const n of names) dbus("/kglobalaccel", "org.kde.KGlobalAccel", "unregister", ["kwin", n], () => {});
     }
 
@@ -140,7 +160,10 @@ Item {
 
         property var sections: []
         property string query: ""
-        onQueryChanged: flick.contentY = 0
+        // Ctrl+A: the next Backspace, Delete or typed key replaces the
+        // whole filter. Any change to the filter ends the selection.
+        property bool allSelected: false
+        onQueryChanged: { flick.contentY = 0; allSelected = false; }
         readonly property var shown: Grouping.filter(sections, query)
         readonly property int shownCount: shown.reduce((n, s) => n + s.rows.length, 0)
         property string ownKeys: ""
@@ -226,18 +249,40 @@ Item {
                     font.pixelSize: guide.unit * 1.3
                     font.bold: true
                 }
-                Text {
-                    text: guide.query
-                        ? "Filter: " + guide.query + "\u258f   " + guide.shownCount + (guide.shownCount === 1 ? " match" : " matches")
-                        : "Type to filter"
-                    color: guide.query ? guide.accent : Kirigami.Theme.disabledTextColor
-                    font.pixelSize: guide.unit * 0.85
-                    font.family: guide.query ? "monospace" : Kirigami.Theme.defaultFont.family
+                Row {
+                    spacing: 0
+                    Text {
+                        text: guide.query ? "Filter: " : "Type to filter"
+                        color: guide.query ? guide.accent : Kirigami.Theme.disabledTextColor
+                        font.pixelSize: guide.unit * 0.85
+                        font.family: guide.query ? "monospace" : Kirigami.Theme.defaultFont.family
+                    }
+                    Text {
+                        visible: guide.query !== ""
+                        text: guide.query
+                        // Selected (Ctrl+A): drawn like a text selection.
+                        color: guide.allSelected ? Kirigami.Theme.highlightedTextColor : guide.accent
+                        font.pixelSize: guide.unit * 0.85
+                        font.family: "monospace"
+                        Rectangle {
+                            z: -1
+                            anchors.fill: parent
+                            visible: guide.allSelected
+                            color: Kirigami.Theme.highlightColor
+                        }
+                    }
+                    Text {
+                        visible: guide.query !== ""
+                        text: "\u258f   " + guide.shownCount + (guide.shownCount === 1 ? " match" : " matches")
+                        color: guide.accent
+                        font.pixelSize: guide.unit * 0.85
+                        font.family: "monospace"
+                    }
                 }
                 Text {
                     width: parent.width
                     wrapMode: Text.WordWrap
-                    text: "Live from KDE. Backspace deletes · Esc clears the filter, then closes · a click anywhere"
+                    text: "Live from KDE. Backspace deletes · Ctrl+Backspace deletes a word · Ctrl+A selects the filter · Esc clears the filter, then closes · a click anywhere"
                           + (guide.ownKeys ? " or " + guide.ownKeys : "") + " closes · mouse wheel scrolls"
                     color: Kirigami.Theme.disabledTextColor
                     font.pixelSize: guide.unit * 0.7
