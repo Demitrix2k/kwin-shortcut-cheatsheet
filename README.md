@@ -7,6 +7,10 @@ and again to close, or click anywhere, or press the shortcut again.
 
 ![KWin Shortcut Cheat Sheet overlay](docs/screenshot.png)
 
+![The accent colour following five dark colour schemes: Breeze Dark, Dracula, Catppuccin Mocha Flamingo, Emerald Dark and Tokyo Night Storm](docs/themes.gif)
+
+The accent (section titles, border and key chips) follows your colour scheme, shown here with five dark schemes.
+
 - **Live.** It asks kglobalaccel (KDE's global shortcut service) over D-Bus
   each time it opens. A key you change in System Settings shows up straight
   away, and so do the shortcuts of any KWin script, app or Plasma part.
