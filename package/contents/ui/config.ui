@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>KeysGuideConfig</class>
+ <widget class="QWidget" name="KeysGuideConfig">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>520</width><height>460</height></rect>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <item>
+    <widget class="QLabel" name="shortcutNote">
+     <property name="text">
+      <string>The key that opens the guide (Meta+/ by default) is set under System Settings &gt; Keyboard &gt; Shortcuts &gt; KWin &gt; “Keys Guide: Show or hide the shortcut overview”.</string>
+     </property>
+     <property name="wordWrap"><bool>true</bool></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="customLabel">
+     <property name="text">
+      <string>Custom sections, listed first. One per line as “Title: regex”; the regex is matched, ignoring case, against each shortcut's label and its action id. Lines starting with # are ignored.</string>
+     </property>
+     <property name="wordWrap"><bool>true</bool></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPlainTextEdit" name="kcfg_CustomGroups">
+     <property name="placeholderText">
+      <string>Focus: ^Switch Window|Focus
+Screenshots: Spectacle|screenshot</string>
+     </property>
+     <property name="tabChangesFocus"><bool>true</bool></property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="hideLabel">
+       <property name="text"><string>Hide shortcuts matching:</string></property>
+       <property name="buddy"><cstring>kcfg_HidePattern</cstring></property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="kcfg_HidePattern">
+       <property name="placeholderText"><string>regex, e.g. ^Plasma: |Zoom</string></property>
+       <property name="clearButtonEnabled"><bool>true</bool></property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QCheckBox" name="kcfg_SplitScripts">
+       <property name="text"><string>Give each KWin script's shortcuts their own section</string></property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QCheckBox" name="kcfg_UseCustomAccent">
+       <property name="text"><string>Custom accent colour:</string></property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="KColorButton" name="kcfg_AccentColor">
+       <property name="enabled"><bool>false</bool></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KColorButton</class>
+   <extends>QPushButton</extends>
+   <header>kcolorbutton.h</header>
+  </customwidget>
+ </customwidgets>
+ <connections>
+  <connection>
+   <sender>kcfg_UseCustomAccent</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>kcfg_AccentColor</receiver>
+   <slot>setEnabled(bool)</slot>
+  </connection>
+ </connections>
+</ui>

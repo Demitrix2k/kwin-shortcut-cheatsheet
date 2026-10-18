@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+                          http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+  <kcfgfile name=""/>
+  <group name="">
+    <entry name="CustomGroups" type="String">
+      <label>Custom sections, one "Title: regex" per line, matched against each shortcut's label and action id</label>
+      <default></default>
+    </entry>
+    <entry name="HidePattern" type="String">
+      <label>Hide shortcuts whose label, action id or "Component: label" matches this regex</label>
+      <default></default>
+    </entry>
+    <entry name="SplitScripts" type="Bool">
+      <label>Give KWin scripts' shortcuts ("Script: action") their own sections</label>
+      <default>true</default>
+    </entry>
+    <entry name="UseCustomAccent" type="Bool">
+      <label>Use a custom accent colour instead of the colour scheme's highlight</label>
+      <default>false</default>
+    </entry>
+    <entry name="AccentColor" type="Color">
+      <label>Accent colour</label>
+      <default>61,174,233</default>
+    </entry>
+  </group>
+</kcfg>

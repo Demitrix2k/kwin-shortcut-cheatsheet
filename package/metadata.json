@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Id": "keysguide",
+        "Name": "Keys Guide",
+        "Description": "Meta+/ shows every global shortcut with the key it has right now, grouped by what it does",
+        "Icon": "input-keyboard",
+        "Authors": [{ "Name": "Demitrix2k" }],
+        "License": "MIT",
+        "Version": "1.0.0",
+        "Website": "https://github.com/Demitrix2k/kwin-keys-guide",
+        "EnabledByDefault": false
+    },
+    "X-Plasma-API": "declarativescript",
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-MainScript": "ui/main.qml",
+    "X-KDE-ConfigModule": "kwin/effects/configs/kcm_kwin4_genericscripted"
+}
