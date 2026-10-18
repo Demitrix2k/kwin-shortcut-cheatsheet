@@ -69,6 +69,7 @@ function parsePattern(text) {
 function rowsOf(path, infos, names) {
     var out = [];
     (infos || []).forEach(function (r) {
+        if (/^KeysGuide(Escape|Backspace|Type )/.test(String(r[0]))) return;   // the guide's own typing keys
         var keys = [];
         (r[6] || []).forEach(function (k) { var t = keyText(k, names); if (t) keys.push(t); });
         if (!keys.length) return;
@@ -159,6 +160,22 @@ function sections(rows, options) {
             return { title: title, rows: byTitle[title].sort(function (a, b) { return cmp(a.label, b.label); }) };
         })
         .filter(function (s) { return s.rows.length; });
+}
+
+// Sections with only the rows whose section title, label or keys contain
+// every word of the query (ignoring case).
+function filter(list, query) {
+    var words = String(query || "").toLowerCase().split(/\s+/).filter(function (w) { return w; });
+    if (!words.length) return list;
+    var out = [];
+    list.forEach(function (s) {
+        var rows = s.rows.filter(function (row) {
+            var hay = (s.title + " " + row.label + " " + row.keys.join(" ")).toLowerCase();
+            return words.every(function (w) { return hay.indexOf(w) >= 0; });
+        });
+        if (rows.length) out.push({ title: s.title, rows: rows });
+    });
+    return out;
 }
 
 function cmp(a, b) { return String(a).localeCompare(String(b)); }

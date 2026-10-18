@@ -2,8 +2,8 @@
 
 A KWin script for KDE Plasma 6 that shows every global shortcut you have, with
 the key it has **right now**, in one overlay. Press <kbd>Meta</kbd>+<kbd>/</kbd>
-to open it. Press <kbd>Esc</kbd>, click anywhere, or press the shortcut again to
-close it.
+to open it, and type to filter it. Press <kbd>Esc</kbd> to clear the filter
+and again to close, or click anywhere, or press the shortcut again.
 
 ![Keys Guide overlay](docs/screenshot.png)
 
@@ -11,6 +11,9 @@ close it.
   each time it opens. A key you change in System Settings shows up straight
   away, and so do the shortcuts of any KWin script, app or Plasma part.
 - **Only bound shortcuts.** Actions without a key aren't shown.
+- **Type to filter.** Letters, digits and spaces narrow the list. Every word
+  you type has to appear in the shortcut's name, its keys or its section, so
+  `meta shift` shows everything on Meta+Shift. <kbd>Backspace</kbd> deletes.
 - **Grouped.** KWin's own actions are split into *Overview & effects*,
   *Window switching*, *Screens*, *Virtual desktops*, *Windows* and *Other
   KWin*. Each KWin script whose shortcuts are labelled `Script name: …` gets
@@ -46,10 +49,13 @@ Shortcuts › KWin and find **Keys Guide: Show or hide the shortcut overview**.
 take a key from apps. On layouts where `/` needs <kbd>Shift</kbd> (German,
 Nordic and others), the default may not trigger. Rebind it there.
 
-While the guide is open, it also registers **Keys Guide: Close (only while it
-is open)** on <kbd>Esc</kbd>. It removes that again when the guide closes, so
-<kbd>Esc</kbd> goes back to your apps. If you see that entry in System
-Settings while the guide is closed, it's a leftover and safe to remove.
+While the guide is open, it also holds 39 keys as temporary global shortcuts:
+<kbd>a</kbd>–<kbd>z</kbd>, <kbd>0</kbd>–<kbd>9</kbd>, <kbd>Space</kbd>,
+<kbd>Backspace</kbd> and <kbd>Esc</kbd> (see [Gotchas](#gotchas) for why).
+It removes them all from kglobalaccel when it closes, so the keys go back to
+your apps. If you see **Keys Guide: Type into the filter**, **Delete a filter
+letter** or **Clear the filter, or close** in System Settings while the guide
+is closed, they're leftovers and safe to remove.
 
 ## Settings
 
@@ -75,10 +81,13 @@ action ids in `~/.config/kglobalshortcutsrc`.
 
 ## Gotchas
 
-- **No typing or arrow keys.** KWin never gives keyboard focus to a script's
-  own windows. So the guide can't be filtered by typing, and arrow keys don't
-  scroll it. Use the mouse wheel. <kbd>Esc</kbd> works through the temporary
-  global shortcut described above.
+- **Typing works through global shortcuts.** KWin never gives keyboard focus
+  to a script's own windows, so key presses can't reach the guide. Instead,
+  the keys it needs are global shortcuts while it's open (see above). Only
+  plain letters, digits and space can be typed, and arrow keys don't scroll:
+  use the mouse wheel. While the guide is open, those keys don't reach your
+  apps. If another global shortcut already uses one of them as a bare key,
+  that letter won't type.
 - **Covers the whole monitor.** The overlay is an unmanaged window covering
   the active monitor, panels included. That's how a click anywhere can close
   it.

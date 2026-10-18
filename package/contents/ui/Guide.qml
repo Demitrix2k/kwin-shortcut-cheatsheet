@@ -1,8 +1,8 @@
 // Keys Guide: a shortcut (Meta+/ by default) shows every global shortcut that
 // has a key, as KDE has it right now: kglobalaccel is asked over D-Bus each
 // time, so a key changed in System Settings shows up straight away.
-// Escape, a click (on it or on any other window) or the shortcut again
-// closes it.
+// Typing filters it. Escape clears the filter, then closes it; so does a
+// click (on it or on any other window) or the shortcut again.
 import QtQuick
 import QtQuick.Window as QW
 import org.kde.kwin
@@ -22,25 +22,48 @@ Item {
         onActivated: guide.visible ? guide.close() : root.load()
     }
 
-    // KWin never gives its own QML windows keyboard focus, so Escape can't
-    // reach the guide as a key press. Instead a global Escape shortcut exists
-    // only while the guide is up, and is removed from KDE's list again when
-    // it closes, so Escape goes back to the apps. (A shortcut destroyed and
-    // made again without being removed can end up deaf.)
+    // KWin never gives its own QML windows keyboard focus, so key presses
+    // can't reach the guide. Instead, while it is up, the keys it needs are
+    // global shortcuts (letters, digits and space type into the filter;
+    // Backspace deletes; Escape clears the filter, then closes), and they
+    // are all removed from KDE's list again when it closes, so the keys go
+    // back to the apps. (A shortcut destroyed and made again without being
+    // removed can end up deaf.)
+    readonly property var typedKeys: "abcdefghijklmnopqrstuvwxyz0123456789".split("").concat([" "])
+    function typeName(k) { return "KeysGuideType " + (k === " " ? "Space" : k); }
     Loader {
-        id: escapeKey
+        id: typing
         active: false
-        sourceComponent: ShortcutHandler {
-            name: "KeysGuideEscape"
-            text: "Keys Guide: Close (only while it is open)"
-            sequence: "Escape"
-            onActivated: guide.close()
+        sourceComponent: Item {
+            ShortcutHandler {
+                name: "KeysGuideEscape"
+                text: "Keys Guide: Clear the filter, or close (only while it is open)"
+                sequence: "Escape"
+                onActivated: guide.query ? guide.query = "" : guide.close()
+            }
+            ShortcutHandler {
+                name: "KeysGuideBackspace"
+                text: "Keys Guide: Delete a filter letter (only while it is open)"
+                sequence: "Backspace"
+                onActivated: guide.query = guide.query.slice(0, -1)
+            }
+            Instantiator {
+                model: root.typedKeys
+                delegate: ShortcutHandler {
+                    required property string modelData
+                    name: root.typeName(modelData)
+                    text: "Keys Guide: Type into the filter (only while it is open)"
+                    sequence: modelData === " " ? "Space" : modelData.toUpperCase()
+                    onActivated: guide.query += modelData
+                }
+            }
         }
     }
-    function releaseEscape() {
-        if (!escapeKey.active) return;
-        escapeKey.active = false;
-        dbus("/kglobalaccel", "org.kde.KGlobalAccel", "unregister", ["kwin", "KeysGuideEscape"], () => {});
+    function releaseKeys() {
+        if (!typing.active) return;
+        typing.active = false;
+        const names = ["KeysGuideEscape", "KeysGuideBackspace"].concat(typedKeys.map(typeName));
+        for (const n of names) dbus("/kglobalaccel", "org.kde.KGlobalAccel", "unregister", ["kwin", n], () => {});
     }
 
     // Clicking any other window (or the desktop) activates it: close then.
@@ -116,6 +139,10 @@ Item {
         Kirigami.Theme.inherit: false
 
         property var sections: []
+        property string query: ""
+        onQueryChanged: flick.contentY = 0
+        readonly property var shown: Grouping.filter(sections, query)
+        readonly property int shownCount: shown.reduce((n, s) => n + s.rows.length, 0)
         property string ownKeys: ""
         property var errors: []
         property var area: null
@@ -140,9 +167,9 @@ Item {
         readonly property var columns: {
             const cols = [];
             for (let i = 0; i < columnCount; i++) cols.push([]);
-            const total = sections.reduce((n, s) => n + s.rows.length + 2, 0);
+            const total = shown.reduce((n, s) => n + s.rows.length + 2, 0);
             let col = 0, used = 0;
-            for (const s of sections) {
+            for (const s of shown) {
                 if (col < columnCount - 1 && used > 0 && used + (s.rows.length + 2) / 2 > total / columnCount) { col++; used = 0; }
                 cols[col].push(s);
                 used += s.rows.length + 2;
@@ -151,6 +178,7 @@ Item {
         }
 
         function open(list, own, errs, where) {
+            query = "";
             sections = list;
             ownKeys = own;
             errors = errs;
@@ -158,10 +186,16 @@ Item {
             flick.contentY = 0;
             show();
             raise();
-            escapeKey.active = true;
+            typing.active = true;
         }
 
-        onVisibleChanged: if (!visible) root.releaseEscape()
+        onVisibleChanged: if (!visible) root.releaseKeys()
+
+        // The panel keeps the height it opened with while a filter narrows
+        // the list, so it doesn't jump around under the pointer.
+        readonly property real naturalHeight: Math.min(Math.round(height * 0.88), header.height + Math.max(content.implicitHeight, unit * 3) + unit * 3)
+        property real keptHeight: 0
+        onNaturalHeightChanged: if (!query) keptHeight = naturalHeight
 
         Rectangle {
             anchors.fill: parent
@@ -172,7 +206,7 @@ Item {
         Rectangle {
             id: panel
             width: Math.min(Math.round(guide.width * 0.92), guide.columnCount * (guide.columnWidth + guide.unit) + guide.unit * 2)
-            height: Math.min(Math.round(guide.height * 0.88), header.height + Math.max(content.implicitHeight, guide.unit * 3) + guide.unit * 3)
+            height: guide.query ? Math.max(guide.keptHeight, guide.naturalHeight) : guide.naturalHeight
             anchors.centerIn: parent
             radius: Kirigami.Units.cornerRadius
             color: Qt.alpha(Kirigami.Theme.backgroundColor, 0.97)
@@ -193,12 +227,20 @@ Item {
                     font.bold: true
                 }
                 Text {
+                    text: guide.query
+                        ? "Filter: " + guide.query + "\u258f   " + guide.shownCount + (guide.shownCount === 1 ? " match" : " matches")
+                        : "Type to filter"
+                    color: guide.query ? guide.accent : Kirigami.Theme.disabledTextColor
+                    font.pixelSize: guide.unit * 0.85
+                    font.family: guide.query ? "monospace" : Kirigami.Theme.defaultFont.family
+                }
+                Text {
                     width: parent.width
                     wrapMode: Text.WordWrap
-                    text: "Live from KDE. Esc, a click anywhere" + (guide.ownKeys ? " or " + guide.ownKeys : "")
-                          + " closes; scroll with the mouse wheel."
+                    text: "Live from KDE. Backspace deletes · Esc clears the filter, then closes · a click anywhere"
+                          + (guide.ownKeys ? " or " + guide.ownKeys : "") + " closes · mouse wheel scrolls"
                     color: Kirigami.Theme.disabledTextColor
-                    font.pixelSize: guide.unit * 0.75
+                    font.pixelSize: guide.unit * 0.7
                 }
                 Text {
                     visible: guide.errors.length > 0
@@ -212,8 +254,8 @@ Item {
 
             Text {
                 anchors.centerIn: flick
-                visible: guide.sections.length === 0
-                text: "No global shortcuts have a key"
+                visible: guide.shownCount === 0
+                text: guide.query ? "No shortcuts match \u201c" + guide.query + "\u201d" : "No global shortcuts have a key"
                 color: Kirigami.Theme.disabledTextColor
                 font.pixelSize: guide.unit * 0.9
             }

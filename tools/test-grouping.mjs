@@ -8,7 +8,7 @@ const load = (file, names) => {
     return new Function(`${src}\nreturn { ${names} };`)();
 };
 const { names } = load("KeyNames.js", "names");
-const G = load("Grouping.js", "keyText, parseRules, parsePattern, rowsOf, sections");
+const G = load("Grouping.js", "keyText, parseRules, parsePattern, rowsOf, sections, filter");
 
 // Key codes.
 const META = 0x10000000, CTRL = 0x04000000, ALT = 0x08000000, SHIFT = 0x02000000;
@@ -45,6 +45,8 @@ const kwin = G.rowsOf("/component/kwin", [
     info("TilerFocusLeft", "Tiler: Focus Left", [META | 0x48]),
     info("TilerFocusRight", "Tiler: Focus Right", [META | 0x4c]),
     info("Lonely", "Lonely: only one", [META | 0x4f]),                  // single prefix: not split
+    info("KeysGuideType a", "Keys Guide: type into the filter", [0x41]), // own typing keys: hidden
+    info("KeysGuideEscape", "Keys Guide: clear the filter, or close", [0x01000000]),
 ], names);
 const plasma = G.rowsOf("/component/plasmashell", [
     info("show dashboard", "Show Desktop Grid", [CTRL | 0x01000033], "plasmashell", "Plasma"),
@@ -66,5 +68,11 @@ assert.ok(!titles(s).includes("Tiler"));
 
 s = G.sections(all, { splitScripts: false });
 assert.ok(!titles(s).includes("Tiler"));
+
+const f = G.filter(G.sections(all, {}), "meta shift");
+assert.deepEqual(f.flatMap(x => x.rows.map(r => r.label)).sort(), ["Disable Active Input Capture", "Move Window to Next Screen"]);
+assert.deepEqual(G.filter(G.sections(all, {}), "tiler right").flatMap(x => x.rows.map(r => r.label)), ["Focus Right"]);
+assert.equal(G.filter(G.sections(all, {}), " ").length, G.sections(all, {}).length);
+assert.equal(G.filter(G.sections(all, {}), "zzz").length, 0);
 
 console.log("ok");
