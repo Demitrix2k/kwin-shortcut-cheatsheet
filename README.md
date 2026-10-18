@@ -5,8 +5,6 @@ the key it has **right now**, in one overlay. Press <kbd>Meta</kbd>+<kbd>/</kbd>
 to open it, and type to filter it. Press <kbd>Esc</kbd> to clear the filter
 and again to close, or click anywhere, or press the shortcut again.
 
-![KWin Shortcut Cheat Sheet overlay](docs/screenshot.png)
-
 ![The accent colour following five dark colour schemes: Breeze Dark, Dracula, Catppuccin Mocha Flamingo, Emerald Dark and Tokyo Night Storm](docs/themes.gif)
 
 The accent (section titles, border and key chips) follows your colour scheme, shown here with five dark schemes.
