@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>KeysGuideConfig</class>
- <widget class="QWidget" name="KeysGuideConfig">
+ <class>CheatSheetConfig</class>
+ <widget class="QWidget" name="CheatSheetConfig">
   <property name="geometry">
    <rect><x>0</x><y>0</y><width>520</width><height>460</height></rect>
   </property>
@@ -9,7 +9,7 @@
    <item>
     <widget class="QLabel" name="shortcutNote">
      <property name="text">
-      <string>The key that opens the guide (Meta+/ by default) is set under System Settings &gt; Keyboard &gt; Shortcuts &gt; KWin &gt; “Keys Guide: Show or hide the shortcut overview”.</string>
+      <string>The key that opens the cheat sheet (Meta+/ by default) is set under System Settings &gt; Keyboard &gt; Shortcuts &gt; KWin &gt; “KWin Shortcut Cheat Sheet: Show or hide the cheat sheet”.</string>
      </property>
      <property name="wordWrap"><bool>true</bool></property>
     </widget>

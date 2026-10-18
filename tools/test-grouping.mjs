@@ -45,10 +45,10 @@ const kwin = G.rowsOf("/component/kwin", [
     info("TilerFocusLeft", "Tiler: Focus Left", [META | 0x48]),
     info("TilerFocusRight", "Tiler: Focus Right", [META | 0x4c]),
     info("Lonely", "Lonely: only one", [META | 0x4f]),                  // single prefix: not split
-    info("KeysGuideType a", "Keys Guide: type into the filter", [0x41]), // own typing keys: hidden
-    info("KeysGuideEscape", "Keys Guide: clear the filter, or close", [0x01000000]),
-    info("KeysGuideSelectAll", "Keys Guide: select the whole filter", [CTRL | 0x41]),
-    info("KeysGuideDeleteWord", "Keys Guide: delete a filter word", [CTRL | 0x01000003]),
+    info("ShortcutCheatSheetType a", "KWin Shortcut Cheat Sheet: type into the filter", [0x41]), // own typing keys: hidden
+    info("ShortcutCheatSheetEscape", "KWin Shortcut Cheat Sheet: clear the filter, or close", [0x01000000]),
+    info("ShortcutCheatSheetSelectAll", "KWin Shortcut Cheat Sheet: select the whole filter", [CTRL | 0x41]),
+    info("ShortcutCheatSheetDeleteWord", "KWin Shortcut Cheat Sheet: delete a filter word", [CTRL | 0x01000003]),
 ], names);
 const plasma = G.rowsOf("/component/plasmashell", [
     info("show dashboard", "Show Desktop Grid", [CTRL | 0x01000033], "plasmashell", "Plasma"),

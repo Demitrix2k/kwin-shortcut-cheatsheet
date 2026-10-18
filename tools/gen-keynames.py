@@ -3,7 +3,7 @@
 
 kglobalaccel hands shortcuts over as Qt key codes (Qt::Key | modifiers).
 QML can't turn those back into text the way QKeySequence::toString() does,
-so the guide carries this table of the special keys' names instead.
+so the cheat sheet carries this table of the special keys' names instead.
 Printable keys aren't listed: their code is the character itself.
 
 Usage: tools/gen-keynames.py [path/to/qnamespace.h] > package/contents/ui/KeyNames.js

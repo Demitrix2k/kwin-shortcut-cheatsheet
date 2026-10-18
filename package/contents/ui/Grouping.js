@@ -1,5 +1,5 @@
 .pragma library
-// Turns kglobalaccel's shortcut lists into the guide's sections. Kept free of
+// Turns kglobalaccel's shortcut lists into the cheat sheet's sections. Kept free of
 // QML so tools/test-grouping.mjs can run it under node.
 
 // Qt modifier bits in a key code, in the order System Settings writes them.
@@ -78,7 +78,7 @@ function parsePattern(text) {
 function rowsOf(path, infos, names) {
     var out = [];
     (infos || []).forEach(function (r) {
-        if (/^KeysGuide(Escape|Backspace|Delete|SelectAll|Type )/.test(String(r[0]))) return;   // the guide's own typing keys
+        if (/^ShortcutCheatSheet(Escape|Backspace|Delete|SelectAll|Type )/.test(String(r[0]))) return;   // the cheat sheet's own typing keys
         var keys = [];
         (r[6] || []).forEach(function (k) { var t = keyText(k, names); if (t) keys.push(t); });
         if (!keys.length) return;

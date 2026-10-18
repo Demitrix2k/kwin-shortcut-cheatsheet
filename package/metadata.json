@@ -1,14 +1,14 @@
 {
     "KPackageStructure": "KWin/Script",
     "KPlugin": {
-        "Id": "keysguide",
-        "Name": "Keys Guide",
+        "Id": "kwin-shortcut-cheatsheet",
+        "Name": "KWin Shortcut Cheat Sheet",
         "Description": "Meta+/ shows every global shortcut with the key it has right now, grouped by what it does",
         "Icon": "input-keyboard",
         "Authors": [{ "Name": "Demitrix2k" }],
         "License": "MIT",
         "Version": "1.0.0",
-        "Website": "https://github.com/Demitrix2k/kwin-keys-guide",
+        "Website": "https://github.com/Demitrix2k/kwin-shortcut-cheatsheet",
         "EnabledByDefault": false
     },
     "X-Plasma-API": "declarativescript",
